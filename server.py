@@ -16,8 +16,8 @@ Send a POST request::
 
 """
 import subprocess
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import SocketServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import socketserver
 
 secret = "floofball"
 
@@ -31,7 +31,7 @@ class S(BaseHTTPRequestHandler):
         print(self.headers)
         self._set_headers()
         print(self.headers)
-        self.wfile.write("<html><body><h1>hi!</h1></body></html>")
+        self.wfile.write(bytes("<html><body><h1>hi!</h1></body></html>", encoding="utf-8"))
 
     def do_HEAD(self):
         self._set_headers()
@@ -39,22 +39,40 @@ class S(BaseHTTPRequestHandler):
     def do_POST(self):
         # Doesn't do anything with posted data
         if "cicd" in self.path:
-            bash_command = "./cicd.sh"
+            pipeline = Pipeline("cicd", ".")
         else:
-            bash_command = "./startup.sh"
-        process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
-        process.communicate()
+            pipeline = Pipeline("sunrise", "/home/pi/Devel/sunrise")
+        pipeline.run_pipeline()
 
         self._set_headers()
         content_len = int(self.headers.getheader('content-length', 0))
         post_body = self.rfile.read(content_len)
         print(post_body + "\n")
         self.wfile.write("<html><body><h1>POST!</h1></body></html>")
+
+class Pipeline:
+
+    def __init__(self, directory):
+        self.directory = directory
+        self.deploy_directory = deploy_directory
+        self.scripts = ["update.sh", "deploy.sh"]
+
+    def run_command(self, bash_command):
+        process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
+        return process.communicate()
+
+    def run_pipeline(self):
+        command = "cd {} && ".format(directory)
+        for script in self.scripts:
+            command += "./{} '{}' && ".format(script, self.directory)
+        command += "echo Finished"
+        self.run_command(command)
+        
         
 def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    print 'Starting httpd...'
+    print('Starting httpd...')
     httpd.serve_forever()
 
 if __name__ == "__main__":

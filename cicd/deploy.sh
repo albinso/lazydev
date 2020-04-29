@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-git pull
+cd $1
 sudo systemctl restart CICD
