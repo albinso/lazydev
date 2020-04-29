@@ -23,21 +23,25 @@ secret = "floofball"
 
 class Pipeline:
 
-    def __init__(self, directory):
+    def __init__(self, directory, deploy_directory):
         self.directory = directory
         self.deploy_directory = deploy_directory
         self.scripts = ["update.sh", "deploy.sh"]
 
     def run_command(self, bash_command):
-        process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
+        print("about to run: \n {}".format(bash_command))
+        process = subprocess.Popen(bash_command, stdout=subprocess.PIPE, shell=True)
         return process.communicate()
 
     def run_pipeline(self):
-        command = "cd {} && ".format(directory)
+        command = "cd {} && ".format(self.directory)
         for script in self.scripts:
-            command += "./{} '{}' && ".format(script, self.directory)
+            command += "./{} '{}' && ".format(script, self.deploy_directory)
         command += "echo Finished"
-        self.run_command(command)
+        output, error = self.run_command(command)
+        if error != None:
+            print("Error occured in pipeline")
+            print(output)
         
 
 class S(BaseHTTPRequestHandler):
@@ -58,7 +62,7 @@ class S(BaseHTTPRequestHandler):
     def do_POST(self):
         # Doesn't do anything with posted data
         if "cicd" in self.path:
-            pipeline = Pipeline("cicd", ".")
+            pipeline = Pipeline("cicd", "/home/pi/Devel/CICD")
         else:
             pipeline = Pipeline("sunrise", "/home/pi/Devel/sunrise")
         pipeline.run_pipeline()
