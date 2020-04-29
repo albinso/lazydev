@@ -28,7 +28,9 @@ class S(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        print(self.headers)
         self._set_headers()
+        print(self.headers)
         self.wfile.write("<html><body><h1>hi!</h1></body></html>")
 
     def do_HEAD(self):
@@ -36,8 +38,10 @@ class S(BaseHTTPRequestHandler):
         
     def do_POST(self):
         # Doesn't do anything with posted data
-        
-        bash_command = "./startup.sh"
+        if "cicd" in self.path:
+            bash_command = "./cicd.sh"
+        else:
+            bash_command = "./startup.sh"
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE)
         process.communicate()
 
