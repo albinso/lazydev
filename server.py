@@ -54,7 +54,7 @@ class S(BaseHTTPRequestHandler):
         print(self.headers)
         self._set_headers()
         print(self.headers)
-        self.wfile.write(bytes("<html><body><h1>hi! we have updated</h1></body></html>", encoding="utf-8"))
+        self.wfile.write(bytes("<html><body><h1>hi! we have updated once again</h1></body></html>", encoding="utf-8"))
 
     def do_HEAD(self):
         self._set_headers()
