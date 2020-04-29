@@ -21,35 +21,6 @@ import socketserver
 
 secret = "floofball"
 
-class S(BaseHTTPRequestHandler):
-    def _set_headers(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-
-    def do_GET(self):
-        print(self.headers)
-        self._set_headers()
-        print(self.headers)
-        self.wfile.write(bytes("<html><body><h1>hi!</h1></body></html>", encoding="utf-8"))
-
-    def do_HEAD(self):
-        self._set_headers()
-        
-    def do_POST(self):
-        # Doesn't do anything with posted data
-        if "cicd" in self.path:
-            pipeline = Pipeline("cicd", ".")
-        else:
-            pipeline = Pipeline("sunrise", "/home/pi/Devel/sunrise")
-        pipeline.run_pipeline()
-
-        self._set_headers()
-        content_len = int(self.headers.getheader('content-length', 0))
-        post_body = self.rfile.read(content_len)
-        print(post_body + "\n")
-        self.wfile.write("<html><body><h1>POST!</h1></body></html>")
-
 class Pipeline:
 
     def __init__(self, directory):
@@ -68,6 +39,36 @@ class Pipeline:
         command += "echo Finished"
         self.run_command(command)
         
+
+class S(BaseHTTPRequestHandler):
+    def _set_headers(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+    def do_GET(self):
+        print(self.headers)
+        self._set_headers()
+        print(self.headers)
+        self.wfile.write(bytes("<html><body><h1>hi! we have updated</h1></body></html>", encoding="utf-8"))
+
+    def do_HEAD(self):
+        self._set_headers()
+        
+    def do_POST(self):
+        # Doesn't do anything with posted data
+        if "cicd" in self.path:
+            pipeline = Pipeline("cicd", ".")
+        else:
+            pipeline = Pipeline("sunrise", "/home/pi/Devel/sunrise")
+        pipeline.run_pipeline()
+
+        self._set_headers()
+        content_len = int(self.headers.getheader('content-length', 0))
+        post_body = self.rfile.read(content_len)
+        print(post_body + "\n")
+        self.wfile.write("<html><body><h1>POST!</h1></body></html>")
+
         
 def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)
