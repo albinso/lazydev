@@ -26,22 +26,24 @@ class Pipeline:
     def __init__(self, directory, deploy_directory):
         self.directory = directory
         self.deploy_directory = deploy_directory
-        self.scripts = ["update.sh", "deploy.sh"]
+        self.scripts = ["update.sh", "test.sh", "deploy.sh"]
 
     def run_command(self, bash_command):
         print("about to run: \n {}".format(bash_command))
         process = subprocess.Popen(bash_command, stdout=subprocess.PIPE, shell=True)
-        return process.communicate()
+        output, errors = process.communicate()
+        return output, errors, process.returncode
 
     def run_pipeline(self):
         command = "cd {} && ".format(self.directory)
         for script in self.scripts:
             command += "./{} '{}' && ".format(script, self.deploy_directory)
         command += "echo Finished"
-        output, error = self.run_command(command)
+        output, error, code = self.run_command(command)
         if error != None:
             print("Error occured in pipeline")
             print(output)
+        return output, error, code
         
 
 class S(BaseHTTPRequestHandler):
